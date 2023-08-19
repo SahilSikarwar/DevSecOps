@@ -1,0 +1,16 @@
+## My simple Tmux config Change
+
+bind \\ split-window -h
+bind - split-window -v
+unbind '"'
+unbind %
+
+bind -n M-Left select-pane -L
+bind -n M-Right select-pane -R
+bind -n M-Up select-pane -U
+bind -n M-Down select-pane -D
+
+bind-key k resize-pane -D 5
+bind-key i resize-pane -U 5
+bind-key j resize-pane -L 5
+bind-key l resize-pane -R 5
