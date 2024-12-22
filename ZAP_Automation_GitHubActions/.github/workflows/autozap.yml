@@ -1,0 +1,84 @@
+name: AutoZAP_DAST
+on:
+  workflow_dispatch:
+    inputs:
+      postman_share_url:
+        description: 'Enter your sharable postman url'
+        required: true
+
+      environment:
+        description: 'Enter your postman environment ID'
+        required: true
+
+      target_url:
+        description: 'Enter your target url'
+        required: true
+env:
+    NODE_TLS_REJECT_UNAUTHORIZED: 0
+    POSTMAN_ACCESS_TOKEN: ${{ secrets.POSTMANAPI }}
+    POSTMAN_URL: ${{ github.event.inputs.postman_share_url }}
+    TARGET_URL: ${{ github.event.inputs.target_url }}
+    POSTMAN_ENV: ${{ github.event.inputs.environment }}
+
+jobs:
+  AutoZAP:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install ZAP
+        run: |
+          wget https://github.com/zaproxy/zaproxy/releases/download/v2.15.0/ZAP_2.15.0_Linux.tar.gz
+          tar -xvf ZAP_2.15.0_Linux.tar.gz
+          ./ZAP_2.15.0/zap.sh -daemon -host 0.0.0.0 -port 8090 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.disablekey=true &
+
+      - name: 📦 Install NVM
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install --lts
+          nvm alias default lts/*
+
+      - name: 📦 Install NPM and Verify
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          npm install -g npm@latest
+          node -v
+          npm -v
+  
+      - name: 📦Install Newman
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          npm install -g newman
+          newman -v
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13' 
+
+      - name: 📋 Installing requirements
+        run: |
+          pip install -r ./scripts/requirements.txt
+
+      - name: ⚡️ Running AutoZap
+        run: |
+          python3 -u ./scripts/auto_zap.py
+          
+      - name: 📩 Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DAST_report_html
+          path: zap_report.html
+          retention-days: 30
+        
+      - name: 📩 Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DAST_report_json
+          path: zap_report.json
+          retention-days: 30
