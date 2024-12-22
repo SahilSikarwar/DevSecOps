@@ -8,17 +8,6 @@ import json_repair
 
 # Function to start ZAP and wait until it's ready
 def start_zap():
-    zap_command = [
-        "./ZAP_2.15.0/zap.sh",
-        "-daemon",
-        "-host", "0.0.0.0",
-        "-port", "8090",
-        "-config", "api.addrs.addr.name=.*",
-        "-config", "api.addrs.addr.regex=true",
-        "-config", "api.disablekey=true",
-        "&"
-    ]
-
     try:
         print("Starting ZAP...")    
         # Wait until ZAP is ready
