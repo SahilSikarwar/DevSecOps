@@ -9,11 +9,9 @@ import json_repair
 # Function to start ZAP and wait until it's ready
 def start_zap():
     try:
-        print("Starting ZAP...")    
-        # Wait until ZAP is ready
+        print("Checking ZAP Health...")    
         zap_url = "http://0.0.0.0:8090"
         response = requests.get(zap_url)
-        print(response.status_code)
         timeout = 120  # Timeout in seconds
         for _ in range(timeout):
             try:
